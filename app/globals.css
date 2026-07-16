@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+
+/* Using @layer components (instead of plain CSS) guarantees Tailwind
+   utility classes like `bg-gold` or `text-ink` always win when combined
+   with these classes, regardless of which order they're written in JSX.
+   Without this layer, a combo like `pill-badge bg-gold` would silently
+   keep the white background baked into .pill-badge below. */
+@layer components {
+  .ticket-stub {
+    @apply relative bg-white dark:bg-[#1C1C1C] rounded-[20px];
+    box-shadow: 0 8px 30px rgba(20, 20, 20, 0.08);
+  }
+  .dark .ticket-stub {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .tear-line {
+    @apply border-t border-black/10 dark:border-white/10 pt-3;
+  }
+
+  .airport-code {
+    @apply inline-block uppercase font-semibold rounded-full px-3 py-1 text-[11px] tracking-wide;
+    background: rgba(245, 179, 1, 0.14);
+    color: #A87400;
+  }
+  .dark .airport-code {
+    background: rgba(245, 179, 1, 0.18);
+    color: #F5B301;
+  }
+
+  .pill-badge {
+    @apply bg-white dark:bg-[#1C1C1C] text-ink dark:text-white font-semibold text-[13px] rounded-full px-3 py-1.5;
+    box-shadow: 0 4px 14px rgba(20, 20, 20, 0.12);
+  }
+  .dark .pill-badge {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  }
+
+  .chip {
+    @apply border-[1.5px] border-black/10 dark:border-white/15 dark:text-white rounded-full px-[18px] py-2 font-medium text-sm whitespace-nowrap transition-all;
+  }
+  .chip.active {
+    @apply bg-ink text-white border-ink dark:bg-white dark:text-ink dark:border-white;
+  }
+
+  .honeycomb-bg {
+    @apply bg-[#F6F6F4] dark:bg-[#1A1A1A];
+  }
+
+  .hex-frame {
+    @apply rounded-[20px];
+  }
+
+  .card-hover {
+    @apply transition-all;
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(20, 20, 20, 0.14);
+  }
+  .dark .card-hover:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@tailwind utilities;
+
+.route-line {
+  position: relative;
+}
+
+.route-line::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: rgba(245, 179, 1, 0.35);
+}
+
+/* Infinite horizontal ticker — used for the scrolling destination strip.
+   Duplicate the content once in the markup and this loops seamlessly. */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-up {
+    animation: fadeUp 0.6s ease-out both;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

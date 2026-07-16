@@ -1,0 +1,56 @@
+// Prisma schema for Wayfarer Tours (Phase 1: lead-capture, no payments yet)
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // works out of the box with Supabase / Neon free tier
+  url      = env("DATABASE_URL")
+}
+
+model Destination {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  code        String    // short "airport code" style tag, e.g. "GOA", "JAI" — used in the ticket-stub UI
+  tagline     String
+  description String
+  coverImage  String
+  gallery     String[]  @default([])
+  packages    Package[]
+  createdAt   DateTime  @default(now())
+}
+
+model Package {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  title         String
+  destination   Destination  @relation(fields: [destinationId], references: [id])
+  destinationId String
+  durationDays  Int
+  priceInInr    Int
+  coverImage    String
+  summary       String
+  inclusions    String[]     @default([])
+  exclusions    String[]     @default([])
+  itinerary     Json         // array of { day, title, description }
+  featured      Boolean      @default(false)
+  enquiries     Enquiry[]
+  createdAt     DateTime     @default(now())
+}
+
+model Enquiry {
+  id          String    @id @default(cuid())
+  name        String
+  phone       String
+  email       String?
+  travelDate  DateTime?
+  travelers   Int       @default(1)
+  message     String?
+  package     Package?  @relation(fields: [packageId], references: [id])
+  packageId   String?
+  status      String    @default("new") // new | contacted | converted | closed
+  createdAt   DateTime  @default(now())
+}
