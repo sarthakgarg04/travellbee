@@ -13,11 +13,11 @@ export default function Footer() {
         <div className="text-sm text-graytext dark:text-white/60">
           <p className="airport-code mb-3">Reach us</p>
           <p>hello@travellbee.com</p>
-          <p>+91 90000 00000</p>
+          <p>+91 9685810350</p>
         </div>
         <div className="text-sm text-graytext dark:text-white/60">
           <p className="airport-code mb-3">Office</p>
-          <p>Indore, Madhya Pradesh, India</p>
+          <p>Office No 202, Samkit Villa, Near By Rennaisance College, Shreyas Regenst, 53, Anurag Nagar, Indore-452011, Madhya Pradesh, India</p>
         </div>
       </div>
       <div className="border-t border-black/5 dark:border-white/10 py-4 text-center text-xs text-graytext dark:text-white/40">
