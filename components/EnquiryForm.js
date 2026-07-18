@@ -27,6 +27,7 @@ export default function EnquiryForm({ packageId, packageTitle }) {
       travelers: Number(form.travelers.value) || 1,
       message: form.message.value,
       packageId: packageId || null,
+      website: form.website.value,
     };
 
     try {
@@ -110,6 +111,7 @@ export default function EnquiryForm({ packageId, packageTitle }) {
           className="w-full border border-black/15 dark:border-white/15 rounded-stub px-3 py-2 bg-white dark:bg-white/5 text-ink dark:text-white focus:outline-none focus:ring-2 focus:ring-gold"
         />
       </div>
+      <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] w-px h-px" />
       <button
         type="submit"
         disabled={status === "loading"}
