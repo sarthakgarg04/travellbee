@@ -1,23 +1,20 @@
 import { NextResponse } from "next/server";
 
-// Simple HTTP Basic Auth gate for /admin, good enough for Phase 1 with one
-// staff user. Swap for NextAuth.js in Phase 2 if you need multiple admins.
+// NOT a security boundary. Real enforcement is requireAdmin() inside every
+// admin page and server action (see lib/auth.js). This only saves logged-out
+// staff from seeing a thrown error instead of a login form.
 export function middleware(request) {
-  const auth = request.headers.get("authorization");
-  const user = process.env.ADMIN_USER || "admin";
-  const pass = process.env.ADMIN_PASS || "changeme";
-  const expected = "Basic " + Buffer.from(`${user}:${pass}`).toString("base64");
-
-  if (auth === expected) {
-    return NextResponse.next();
+  const hasCookie = request.cookies.has("tb_admin");
+  if (!hasCookie) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    url.search = "";
+    return NextResponse.redirect(url);
   }
-
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: { "WWW-Authenticate": 'Basic realm="Admin"' },
-  });
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/admin/:path*",
+  // Exclude the login page itself, or you get a redirect loop.
+  matcher: ["/admin", "/admin/((?!login).*)"],
 };

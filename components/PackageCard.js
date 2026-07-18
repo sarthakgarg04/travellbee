@@ -19,7 +19,16 @@ export default function PackageCard({ pkg }) {
           {pkg.destination?.name || "Trip"} · {pkg.durationDays}D
         </span>
         <span className="absolute bottom-3 right-3 pill-badge bg-gold text-ink">
-          ₹{pkg.priceInInr.toLocaleString("en-IN")}
+          {pkg.offerPriceInInr ? (
+            <>
+              <span className="line-through opacity-50 font-normal mr-1">
+                ₹{pkg.priceInInr.toLocaleString("en-IN")}
+              </span>
+              ₹{pkg.offerPriceInInr.toLocaleString("en-IN")}
+            </>
+          ) : (
+            <>₹{pkg.priceInInr.toLocaleString("en-IN")}</>
+          )}
         </span>
       </div>
 

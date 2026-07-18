@@ -13,6 +13,10 @@ module.exports = {
         ink: "#141414",
         cloud: "#F6F6F4",
         graytext: "#6B6B66",
+        // warm dark-mode surfaces (page → section → card, lightest last)
+        darkbg: "#1A1712",
+        darksurface: "#221E17",
+        darkcard: "#2A251C",
         // aliases so earlier component references still resolve
         honey: "#F5B301",
         rust: "#D99A00",

@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: noFlashScript }} />
       </head>
-      <body className="font-body bg-white dark:bg-ink text-ink dark:text-white transition-colors">
+      <body className="font-body bg-white dark:bg-darkbg text-ink dark:text-white transition-colors">
         <Header />
         <main>{children}</main>
         <Footer />
