@@ -15,6 +15,7 @@ export default function AdminLayout({ children }) {
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-6 text-sm">
           <span className="airport-code">Admin</span>
           <Link href="/admin/packages" className="font-medium hover:text-gold">Packages</Link>
+          <Link href="/admin/destinations" className="font-medium hover:text-gold">Destinations</Link>
           <Link href="/admin" className="font-medium hover:text-gold">Enquiries</Link>
           <form action={logout} className="ml-auto">
             <button className="text-graytext dark:text-white/50 hover:text-gold">Sign out</button>
