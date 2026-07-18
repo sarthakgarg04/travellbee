@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import PackageCard from "@/components/PackageCard";
 
+
 async function getDestination(slug) {
   try {
     return await prisma.destination.findUnique({
       where: { slug },
-      include: { packages: true },
+      include: { packages: { where: { status: "PUBLISHED" } } },
     });
   } catch {
     return null;

@@ -14,6 +14,7 @@ async function getEnquiries() {
 
 async function updateStatus(formData) {
   "use server";
+  requireAdmin();
   const id = formData.get("id");
   const status = formData.get("status");
   await prisma.enquiry.update({ where: { id }, data: { status } });

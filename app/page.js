@@ -7,18 +7,8 @@ import Reveal from "@/components/Reveal";
 import Counter from "@/components/Counter";
 import QuickPlanWidget from "@/components/QuickPlanWidget";
 
-async function getFeaturedPackages() {
-  try {
-    return await prisma.package.findMany({
-      where: { featured: true },
-      include: { destination: true },
-      take: 4,
-      orderBy: { createdAt: "desc" },
-    });
-  } catch {
-    return [];
-  }
-}
+import { getFeaturedPackages } from "@/lib/services/packages";
+import { THEMES } from "@/lib/constants";
 
 async function getDestinations() {
   try {
@@ -66,7 +56,7 @@ const HOW_IT_WORKS = [
   { step: "4", title: "You travel, we stay on call", body: "Once you're on the trip, we're reachable for anything that comes up along the way." },
 ];
 
-const THEMES = ["Beaches", "Heritage", "Hill stations", "Honeymoon", "Family", "Adventure"];
+
 
 export default async function Home() {
   const [packages, destinations, counts] = await Promise.all([

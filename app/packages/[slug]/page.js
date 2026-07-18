@@ -3,24 +3,15 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import EnquiryForm from "@/components/EnquiryForm";
 
-async function getPackage(slug) {
-  try {
-    return await prisma.package.findUnique({
-      where: { slug },
-      include: { destination: true },
-    });
-  } catch {
-    return null;
-  }
-}
+import { getPublishedPackageBySlug } from "@/lib/services/packages";
 
 export async function generateMetadata({ params }) {
-  const pkg = await getPackage(params.slug);
+  const pkg = await getPublishedPackageBySlug(params.slug);
   return { title: pkg ? `${pkg.title} | Travell Bee` : "Package" };
 }
 
 export default async function PackagePage({ params }) {
-  const pkg = await getPackage(params.slug);
+  const pkg = await getPublishedPackageBySlug(params.slug);
   if (!pkg) notFound();
 
   const itinerary = Array.isArray(pkg.itinerary) ? pkg.itinerary : [];
@@ -74,10 +65,15 @@ export default async function PackagePage({ params }) {
       <div>
         <div className="ticket-stub p-6 mb-6 sticky top-24">
           <p className="text-sm text-graytext dark:text-white/60 mb-1">Starting from</p>
-          <p className="font-display text-3xl text-ink dark:text-white font-extrabold mb-4">
-            ₹{pkg.priceInInr.toLocaleString("en-IN")}
-            <span className="text-sm font-medium text-graytext dark:text-white/60"> / person</span>
-          </p>
+            <p className="font-display text-3xl text-ink dark:text-white font-extrabold mb-4">
+              ₹{(pkg.offerPriceInInr ?? pkg.priceInInr).toLocaleString("en-IN")}
+              {pkg.offerPriceInInr && (
+                <span className="text-base font-medium text-graytext dark:text-white/50 line-through ml-2">
+                  ₹{pkg.priceInInr.toLocaleString("en-IN")}
+                </span>
+              )}
+              <span className="text-sm font-medium text-graytext dark:text-white/60"> / person</span>
+            </p>
           <a
             href="#enquire"
             className="block text-center bg-gold text-ink font-semibold px-6 py-3 rounded-full hover:bg-ink hover:text-white transition-colors"

@@ -1,4 +1,4 @@
-// Prisma schema for Wayfarer Tours (Phase 1: lead-capture, no payments yet)
+// Prisma schema for Travell Bee
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -6,51 +6,81 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // works out of the box with Supabase / Neon free tier
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 model Destination {
   id          String    @id @default(cuid())
   slug        String    @unique
   name        String
-  code        String    // short "airport code" style tag, e.g. "GOA", "JAI" — used in the ticket-stub UI
+  code        String
   tagline     String
   description String
   coverImage  String
-  gallery     String[]  @default([])
   packages    Package[]
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Package {
-  id            String       @id @default(cuid())
-  slug          String       @unique
-  title         String
-  destination   Destination  @relation(fields: [destinationId], references: [id])
-  destinationId String
-  durationDays  Int
-  priceInInr    Int
-  coverImage    String
-  summary       String
-  inclusions    String[]     @default([])
-  exclusions    String[]     @default([])
-  itinerary     Json         // array of { day, title, description }
-  featured      Boolean      @default(false)
-  enquiries     Enquiry[]
-  createdAt     DateTime     @default(now())
+  id              String         @id @default(cuid())
+  slug            String         @unique
+  title           String
+  destination     Destination    @relation(fields: [destinationId], references: [id])
+  destinationId   String
+  durationDays    Int
+  priceInInr      Int
+  offerPriceInInr Int?
+  offerEndsAt     DateTime?
+  coverImage      String
+  summary         String
+  inclusions      String[]       @default([])
+  exclusions      String[]       @default([])
+  itinerary       Json
+  themes          String[]       @default([])
+  featured        Boolean        @default(false)
+  status          PackageStatus  @default(DRAFT)
+  images          PackageImage[]
+  enquiries       Enquiry[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status, featured])
+  @@index([destinationId, status])
+}
+
+model PackageImage {
+  id        String  @id @default(cuid())
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId String
+  url       String
+  publicId  String?
+  alt       String  @default("")
+  order     Int     @default(0)
+
+  @@index([packageId, order])
 }
 
 model Enquiry {
-  id          String    @id @default(cuid())
-  name        String
-  phone       String
-  email       String?
-  travelDate  DateTime?
-  travelers   Int       @default(1)
-  message     String?
-  package     Package?  @relation(fields: [packageId], references: [id])
-  packageId   String?
-  status      String    @default("new") // new | contacted | converted | closed
-  createdAt   DateTime  @default(now())
+  id         String    @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  travelDate DateTime?
+  travelers  Int       @default(1)
+  message    String?
+  package    Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  packageId  String?
+  status     String    @default("new")
+  source     String    @default("web")
+  createdAt  DateTime  @default(now())
+
+  @@index([status, createdAt])
 }

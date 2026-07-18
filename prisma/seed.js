@@ -13,7 +13,6 @@ async function main() {
       description:
         "Goa pairs quiet north-coast beaches with Portuguese-era old towns and easy day trips to spice plantations.",
       coverImage: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2",
-      gallery: [],
     },
   });
 
@@ -28,7 +27,6 @@ async function main() {
       description:
         "Jaipur's forts, palaces, and markets make it one of the most photographed stops on any Rajasthan itinerary.",
       coverImage: "https://images.unsplash.com/photo-1477587458883-47145ed94245",
-      gallery: [],
     },
   });
 
@@ -46,6 +44,8 @@ async function main() {
       inclusions: ["3 nights hotel stay", "Airport transfers", "Daily breakfast", "1 sightseeing day trip"],
       exclusions: ["Flights", "Lunch & dinner", "Water sports"],
       featured: true,
+      status: "PUBLISHED",
+      themes: ["Beaches"],
       itinerary: [
         { day: 1, title: "Arrival & Calangute", description: "Check-in, evening at Calangute beach." },
         { day: 2, title: "Fort Aguada & Candolim", description: "Morning fort visit, afternoon by the beach." },
@@ -69,6 +69,8 @@ async function main() {
       inclusions: ["2 nights hotel stay", "Private car & driver", "Daily breakfast", "Monument entry fees"],
       exclusions: ["Flights/train", "Lunch & dinner", "Camera fees at monuments"],
       featured: true,
+      status: "PUBLISHED",
+      themes: ["Heritage"],
       itinerary: [
         { day: 1, title: "Arrival & City Palace", description: "Check-in, evening at City Palace & Bapu Bazaar." },
         { day: 2, title: "Amber Fort & Nahargarh", description: "Morning fort visit, sunset at Nahargarh." },
