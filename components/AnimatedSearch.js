@@ -12,7 +12,7 @@ const TYPE_MS = 130;
 const DELETE_MS = 70;
 const HOLD_MS = 1800;
 
-export default function AnimatedSearch({ className = "" }) {
+export default function AnimatedSearch({ className = "", onNavigate }) {
   const router = useRouter();
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
@@ -64,6 +64,7 @@ export default function AnimatedSearch({ className = "" }) {
     const q = value.trim();
     if (!q) return;
     router.push(`/destinations?q=${encodeURIComponent(q)}`);
+    onNavigate?.();   
     // Reset the field and release focus so the placeholder animation resumes.
     setValue("");
     setFocused(false);

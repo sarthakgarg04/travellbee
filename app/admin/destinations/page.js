@@ -22,25 +22,30 @@ export default async function AdminDestinationsPage() {
 
       <div className="space-y-3">
         {destinations.map((d) => (
-          <div key={d.id} className="ticket-stub p-4 flex items-center gap-4">
-            <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 bg-cloud dark:bg-white/5">
-              {d.coverImage && <Image src={d.coverImage} alt="" fill sizes="80px" className="object-cover" />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-ink dark:text-white truncate">
-                {d.name}
-                <span className="text-xs text-graytext dark:text-white/40"> · {d.code}</span>
-              </p>
-              <p className="text-xs text-graytext dark:text-white/50 truncate">
-                {d.tagline}
-                {d._count.packages > 0 && ` · ${d._count.packages} package(s)`}
-              </p>
-            </div>
-            <Link href={`/admin/destinations/${d.id}/edit`}
-              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink">
-              Edit
-            </Link>
-          </div>
+          <div key={d.id} className="ticket-stub p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+  <div className="flex items-center gap-4 min-w-0 flex-1">
+    <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 bg-cloud dark:bg-white/5">
+      {d.coverImage && <Image src={d.coverImage} alt="" fill sizes="80px" className="object-cover" />}
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="font-semibold text-ink dark:text-white truncate">
+        {d.name}
+        <span className="text-xs text-graytext dark:text-white/40"> · {d.code}</span>
+      </p>
+      <p className="text-xs text-graytext dark:text-white/50 truncate">
+        {d.tagline}
+        {d._count.packages > 0 && ` · ${d._count.packages} package(s)`}
+      </p>
+    </div>
+  </div>
+
+  <Link
+    href={`/admin/destinations/${d.id}/edit`}
+    className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink self-start sm:self-auto shrink-0"
+  >
+    Edit
+  </Link>
+</div>
         ))}
 
         {destinations.length === 0 && (
