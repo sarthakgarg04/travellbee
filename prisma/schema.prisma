@@ -1,20 +1,11 @@
-// Prisma schema for Travell Bee
-// Docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")   
-}
-
-enum PackageStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Destination {
@@ -25,16 +16,15 @@ model Destination {
   tagline     String
   description String
   coverImage  String
-  packages    Package[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  packages    Package[]
 }
 
 model Package {
   id              String         @id @default(cuid())
   slug            String         @unique
   title           String
-  destination     Destination    @relation(fields: [destinationId], references: [id])
   destinationId   String
   durationDays    Int
   priceInInr      Int
@@ -48,11 +38,14 @@ model Package {
   themes          String[]       @default([])
   featured        Boolean        @default(false)
   status          PackageStatus  @default(DRAFT)
-  images          PackageImage[]
-  enquiries       Enquiry[]
-  reviews         Review[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  mapQuery        String?
+  places          Json?
+  enquiries       Enquiry[]
+  destination     Destination    @relation(fields: [destinationId], references: [id])
+  images          PackageImage[]
+  reviews         Review[]
 
   @@index([status, featured])
   @@index([destinationId, status])
@@ -60,12 +53,12 @@ model Package {
 
 model PackageImage {
   id        String  @id @default(cuid())
-  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
   packageId String
   url       String
   publicId  String?
   alt       String  @default("")
   order     Int     @default(0)
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   @@index([packageId, order])
 }
@@ -78,35 +71,41 @@ model Enquiry {
   travelDate DateTime?
   travelers  Int       @default(1)
   message    String?
-  package    Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
   packageId  String?
   status     String    @default("new")
   source     String    @default("web")
   createdAt  DateTime  @default(now())
+  package    Package?  @relation(fields: [packageId], references: [id])
 
   @@index([status, createdAt])
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  packageId   String
+  authorName  String
+  authorEmail String
+  rating      Int
+  title       String       @default("")
+  body        String
+  verified    Boolean      @default(false)
+  status      ReviewStatus @default(PENDING)
+  travelDate  DateTime?
+  createdAt   DateTime     @default(now())
+  package     Package      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, authorEmail])
+  @@index([packageId, status])
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
 }
 
 enum ReviewStatus {
   PENDING
   APPROVED
   REJECTED
-}
-
-model Review {
-  id          String       @id @default(cuid())
-  package     Package      @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  packageId   String
-  authorName  String
-  authorEmail String
-  rating      Int          // overall 1..5
-  title       String       @default("")
-  body        String
-  verified    Boolean      @default(false)   // admin-set "verified traveller"
-  status      ReviewStatus @default(PENDING)
-  travelDate  DateTime?
-  createdAt   DateTime     @default(now())
-
-  @@unique([packageId, authorEmail])
-  @@index([packageId, status])
 }
