@@ -31,54 +31,59 @@ export default async function AdminPackagesPage() {
 
       <div className="space-y-3">
         {packages.map((p) => (
-          <div key={p.id} className="ticket-stub p-4 flex items-center gap-4">
+          <div key={p.id} className="ticket-stub p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        {/* image + text — stays side-by-side at every width */}
+        <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="relative w-20 h-14 rounded-lg overflow-hidden shrink-0 bg-cloud dark:bg-white/5">
-              {p.coverImage && (
+            {p.coverImage && (
                 <Image src={p.coverImage} alt="" fill sizes="80px" className="object-cover" />
-              )}
+            )}
             </div>
-
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-ink dark:text-white truncate">{p.title}</p>
-              <p className="text-xs text-graytext dark:text-white/50">
+            <p className="font-semibold text-ink dark:text-white truncate">{p.title}</p>
+            <p className="text-xs text-graytext dark:text-white/50">
                 {p.destination.name} · {p.durationDays}D · ₹{p.priceInInr.toLocaleString("en-IN")}
                 {p._count.enquiries > 0 && ` · ${p._count.enquiries} enquiries`}
-              </p>
+            </p>
             </div>
+        </div>
 
+        {/* actions — wrap onto their own line on mobile, inline on desktop */}
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
             <span className={`text-[11px] font-semibold uppercase px-2.5 py-1 rounded-full ${BADGE[p.status]}`}>
-              {p.status}
+            {p.status}
             </span>
 
             <form action={toggleFeatured}>
-              <input type="hidden" name="id" value={p.id} />
-              <button
+            <input type="hidden" name="id" value={p.id} />
+            <button
                 title="Toggle featured"
                 className={`w-8 h-8 rounded-full border text-sm ${
-                  p.featured
+                p.featured
                     ? "bg-gold border-gold text-ink"
                     : "border-black/10 dark:border-white/15 text-graytext"
                 }`}
-              >
+            >
                 ★
-              </button>
+            </button>
             </form>
 
             <form action={setStatus}>
-              <input type="hidden" name="id" value={p.id} />
-              <input type="hidden" name="status" value={p.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED"} />
-              <button className="text-xs font-semibold px-3 py-1.5 rounded-full border border-black/10 dark:border-white/15 hover:border-gold dark:text-white">
+            <input type="hidden" name="id" value={p.id} />
+            <input type="hidden" name="status" value={p.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED"} />
+            <button className="text-xs font-semibold px-3 py-1.5 rounded-full border border-black/10 dark:border-white/15 hover:border-gold dark:text-white">
                 {p.status === "PUBLISHED" ? "Unpublish" : "Publish"}
-              </button>
+            </button>
             </form>
 
             <Link
-              href={`/admin/packages/${p.id}/edit`}
-              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink"
+            href={`/admin/packages/${p.id}/edit`}
+            className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink"
             >
-              Edit
+            Edit
             </Link>
-          </div>
+        </div>
+        </div>
         ))}
 
         {packages.length === 0 && (
