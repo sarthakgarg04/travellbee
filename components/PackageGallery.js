@@ -1,180 +1,183 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { createPortal } from "react-dom";
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import Image from "next/image";
 
-export default function PackageGallery({ images = [], coverImage, title = "" }) {
-  // Prefer the uploaded gallery; fall back to the single cover image.
-  const gallery = images.length
-    ? images
-    : coverImage
-    ? [{ url: coverImage, alt: title }]
-    : [];
+const STAR =
+  "M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.401 8.169L12 18.897l-7.335 3.856 1.401-8.169L.132 9.21l8.2-1.192z";
 
-  const [open, setOpen] = useState(false);
-  const [index, setIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  const openAt = (i) => {
-    setIndex(i);
-    setOpen(true);
-  };
-  const close = useCallback(() => setOpen(false), []);
-  const prev = useCallback(
-    () => setIndex((i) => (i - 1 + gallery.length) % gallery.length),
-    [gallery.length]
+function Stars({ n }) {
+  return (
+    <div className="flex gap-0.5" aria-hidden="true">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill="currentColor"
+          className={i < n ? "text-gold" : "text-white/25"}>
+          <path d={STAR} />
+        </svg>
+      ))}
+    </div>
   );
-  const next = useCallback(
-    () => setIndex((i) => (i + 1) % gallery.length),
-    [gallery.length]
-  );
+}
+
+/**
+ * One shared lightbox for the whole page.
+ *
+ * Usage on the page:
+ *   <GalleryProvider images={allImages}>
+ *      ...anything, including <PackageGallery/> and the places grid...
+ *   </GalleryProvider>
+ *
+ * `allImages` is the full album: [{ url, alt }] — cover + gallery + places,
+ * already de-duplicated by the page. Any child can call openGallery(index)
+ * to open the lightbox at a specific photo.
+ */
+const GalleryCtx = createContext(null);
+export const useGallery = () => useContext(GalleryCtx);
+
+export function GalleryProvider({ images = [], children }) {
+  const [index, setIndex] = useState(-1); // -1 = closed
+  const open = useCallback((i = 0) => setIndex(i), []);
+  const close = useCallback(() => setIndex(-1), []);
+  const isOpen = index >= 0;
 
   useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    function onKey(e) {
+    if (!isOpen) return;
+    const onKey = (e) => {
       if (e.key === "Escape") close();
-      if (e.key === "ArrowLeft") prev();
-      if (e.key === "ArrowRight") next();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.removeEventListener("keydown", onKey);
+      if (e.key === "ArrowRight") setIndex((i) => (i + 1) % images.length);
+      if (e.key === "ArrowLeft") setIndex((i) => (i - 1 + images.length) % images.length);
     };
-  }, [open, close, prev, next]);
-
-  if (!gallery.length) return null;
-
-  const hero = gallery[0];
-  const thumbs = gallery.slice(1, 3);
-  const remaining = gallery.length - 3;
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, images.length, close]);
 
   return (
-    <>
-      <div className="grid grid-cols-3 gap-3 h-72 sm:h-96 mb-6">
-        <button
-          type="button"
-          onClick={() => openAt(0)}
-          aria-label="Open photo gallery"
-          className={`relative rounded-stub overflow-hidden group ${
-            thumbs.length ? "col-span-2" : "col-span-3"
-          }`}
-        >
-          <Image
-            src={hero.url}
-            alt={hero.alt || title}
-            fill
-            sizes="(min-width:1024px) 640px, 100vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            priority
-          />
-        </button>
+    <GalleryCtx.Provider value={{ images, openGallery: open }}>
+      {children}
 
-        {thumbs.length > 0 && (
-          <div className="grid grid-rows-2 gap-3">
-            {thumbs.map((im, i) => {
-              const realIndex = i + 1;
-              const isLast = i === thumbs.length - 1;
-              return (
-                <button
-                  key={im.url}
-                  type="button"
-                  onClick={() => openAt(realIndex)}
-                  aria-label={isLast && remaining > 0 ? "View all photos" : "Open photo"}
-                  className="relative rounded-stub overflow-hidden group"
-                >
-                  <Image
-                    src={im.url}
-                    alt={im.alt || title}
-                    fill
-                    sizes="320px"
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {isLast && remaining > 0 && (
-                    <span className="absolute inset-0 bg-black/55 flex items-center justify-center">
-                      <span className="inline-flex items-center gap-2 bg-white text-ink text-sm font-semibold px-4 py-2 rounded-full">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2" />
-                          <path d="M3 15l5-5 4 4 3-3 6 6" />
-                        </svg>
-                        View all {gallery.length}
-                      </span>
-                    </span>
-                  )}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/90 overflow-y-auto p-4 sm:p-8" onClick={close}>
+          <button onClick={close} aria-label="Close gallery"
+            className="fixed top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {/* large current image */}
+          <div className="max-w-4xl mx-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="relative w-full aspect-[3/2] rounded-xl overflow-hidden bg-white/5 mb-4">
+              <Image key={index} src={images[index].url} alt={images[index].alt || ""} fill priority
+                sizes="(max-width: 900px) 100vw, 900px" className="object-contain" />
+            </div>
+
+            {/* thumbnail strip */}
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {images.map((im, i) => (
+                <button key={i} onClick={() => setIndex(i)}
+                  className={`relative w-20 h-16 rounded-lg overflow-hidden shrink-0 ring-2 transition ${
+                    i === index ? "ring-gold" : "ring-transparent opacity-60 hover:opacity-100"
+                  }`}>
+                  <Image src={im.url} alt="" fill sizes="80px" className="object-cover" />
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+    </GalleryCtx.Provider>
+  );
+}
 
-      {mounted &&
-        open &&
-        createPortal(
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${title} photos`}
-            className="fixed inset-0 z-[120] bg-black/90 flex flex-col"
-          >
-            <div className="flex items-center justify-between px-5 py-4 text-white">
-              <span className="text-sm tabular-nums">
-                {index + 1} / {gallery.length}
-              </span>
-              <button
-                onClick={close}
-                aria-label="Close gallery"
-                className="w-10 h-10 rounded-full border border-white/25 flex items-center justify-center hover:border-white transition-colors"
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M6 6l12 12M18 6L6 18" />
+/**
+ * The hero (main image + right column). Reads the shared album from context,
+ * so its thumbnails, "View All", and the places grid all open the same lightbox.
+ */
+export default function PackageGallery({ rating, reviewCount }) {
+  const { images, openGallery } = useGallery();
+  const cover = images[0];
+  const extras = images.slice(1);
+  const hasRating = Boolean(rating && reviewCount);
+  const hasRight = hasRating || extras.length > 0;
+
+  if (!cover) return null;
+
+  return (
+    <div className={`grid gap-3 ${hasRight ? "md:grid-cols-3" : ""}`}>
+      {/* main image */}
+      <button onClick={() => openGallery(0)}
+        className={`relative rounded-stub overflow-hidden group text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+          hasRight ? "md:col-span-2 h-72 sm:h-[440px]" : "h-72 sm:h-[460px]"
+        }`}
+        aria-label="Open photo gallery">
+        <Image src={cover.url} alt={cover.alt || ""} fill priority sizes="(max-width: 768px) 100vw, 900px"
+          className="object-cover group-hover:scale-105 transition-transform duration-700" />
+      </button>
+
+      {hasRight && (
+        <div className="flex flex-col gap-3">
+          {hasRating && (
+            <div className="rounded-stub bg-ink text-white p-4 flex flex-col justify-center min-h-[96px]">
+              <p className="font-display text-2xl font-extrabold leading-none">
+                {rating.toFixed(1)}
+                <span className="text-sm font-semibold text-white/50">/5</span>
+              </p>
+              <div className="my-1"><Stars n={Math.round(rating)} /></div>
+              <p className="text-xs text-white/60">Based on {reviewCount} review{reviewCount > 1 ? "s" : ""}</p>
+            </div>
+          )}
+
+          {extras.length > 0 && (
+            <div className="relative grid grid-cols-2 gap-3 flex-1">
+              {extras.slice(0, 2).map((im, idx) => (
+                <button key={idx} onClick={() => openGallery(idx + 1)}
+                  className={`relative rounded-stub overflow-hidden group min-h-[130px] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+                    extras.length === 1 ? "col-span-2" : ""
+                  }`}>
+                  <Image src={im.url} alt={im.alt || ""} fill sizes="240px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                </button>
+              ))}
+
+              <button onClick={() => openGallery(0)} aria-label={`View all ${images.length} photos`}
+                className="absolute bottom-3 right-3 inline-flex items-center gap-2 bg-white/95 backdrop-blur text-ink text-sm font-semibold pl-3.5 pr-4 py-2 rounded-full shadow-lg hover:bg-ink hover:text-white transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <rect x="8" y="8" width="12" height="12" rx="2" />
+                  <path d="M16 8V6a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
+                View All
               </button>
             </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-            <div className="flex-1 relative flex items-center justify-center px-4 pb-4 select-none">
-              {gallery.length > 1 && (
-                <button
-                  onClick={prev}
-                  aria-label="Previous photo"
-                  className="absolute left-3 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M15 6l-6 6 6 6" />
-                  </svg>
-                </button>
-              )}
+/**
+ * Places grid. Each card opens the shared lightbox at its own photo,
+ * because place photos are part of the same album (see the page).
+ */
+export function PlacesGrid({ places = [], startIndex = 0 }) {
+  const { openGallery } = useGallery();
+  if (places.length === 0) return null;
 
-              <div className="relative w-full max-w-4xl h-full">
-                <Image
-                  src={gallery[index].url}
-                  alt={gallery[index].alt || title}
-                  fill
-                  sizes="90vw"
-                  className="object-contain"
-                />
-              </div>
-
-              {gallery.length > 1 && (
-                <button
-                  onClick={next}
-                  aria-label="Next photo"
-                  className="absolute right-3 z-10 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M9 6l6 6-6 6" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>,
-          document.body
-        )}
-    </>
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      {places.map((p, i) => (
+        <button key={i} onClick={() => openGallery(startIndex + i)} className="group text-left">
+          <div className="relative h-32 rounded-stub overflow-hidden mb-2">
+            <Image src={p.image} alt={p.name} fill sizes="220px"
+              className="object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <p className="text-sm font-semibold text-ink dark:text-white">{p.name}</p>
+        </button>
+      ))}
+    </div>
   );
 }

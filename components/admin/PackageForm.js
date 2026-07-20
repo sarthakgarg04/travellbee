@@ -6,6 +6,7 @@ import { savePackage, deletePackage } from "@/app/admin/packages/actions";
 import ImageUploader from "./ImageUploader";
 import { slugify } from "@/lib/validate";
 import { THEMES, PACKAGE_STATUSES } from "@/lib/constants";
+import PlacesEditor from "./PlacesEditor";
 
 const field =
   "w-full border border-black/15 dark:border-white/15 rounded-stub px-3 py-2 bg-white dark:bg-white/5 text-ink dark:text-white focus:outline-none focus:ring-2 focus:ring-gold";
@@ -45,6 +46,9 @@ export default function PackageForm({ pkg, destinations }) {
     (pkg?.images || []).map((im) => ({ url: im.url, publicId: im.publicId, alt: im.alt }))
   );
 
+  const [places, setPlaces] = useState(Array.isArray(pkg?.places) ? pkg.places : []);
+  const [mapQuery, setMapQuery] = useState(pkg?.mapQuery || "");
+
   const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
 
   function onTitle(v) {
@@ -55,7 +59,7 @@ export default function PackageForm({ pkg, destinations }) {
     e.preventDefault();
     setErrors({});
     start(async () => {
-      const res = await savePackage(pkg?.id || null, { ...f, itinerary, images });
+      const res = await savePackage(pkg?.id || null, { ...f, itinerary, images,places, mapQuery });
       // On success the action redirects, so we only get here on failure.
       if (res && !res.ok) {
         setErrors(res.errors);
@@ -210,6 +214,20 @@ export default function PackageForm({ pkg, destinations }) {
           + Add day
         </button>
         <Err k="itinerary" />
+      </div>
+
+      {/* PLACES + MAP */}
+      <div className="ticket-stub p-6 space-y-6">
+        <PlacesEditor places={places} onChange={setPlaces} />
+
+        <div>
+          <label className={label}>Map location</label>
+          <input className={field} placeholder='e.g. "Jaipur, Rajasthan"'
+            value={mapQuery} onChange={(e) => setMapQuery(e.target.value)} />
+          <p className="text-xs text-graytext dark:text-white/40 mt-1">
+            Just type the place name — no coordinates or API key needed. Leave blank to hide the map.
+          </p>
+        </div>
       </div>
 
       {/* INCLUSIONS */}
