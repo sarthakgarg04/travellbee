@@ -43,12 +43,26 @@ export async function savePackage(id, input) {
       await tx.packageImage.deleteMany({ where: { packageId: id } });
       return tx.package.update({
         where: { id },
-        data: { ...fields, images: { create: images } },
+        data: { ...fields, images: {
+                            create: images.map((im, i) => ({
+                              url: im.url,
+                              publicId: im.publicId,
+                              alt: im.alt || "",
+                              order: i,
+                            })),
+                          } },
       });
     });
   } else {
     saved = await prisma.package.create({
-      data: { ...fields, images: { create: images } },
+      data: { ...fields, images: {
+                    create: images.map((im, i) => ({
+                      url: im.url,
+                      publicId: im.publicId,
+                      alt: im.alt || "",
+                      order: i,
+                    })),
+                  } },
     });
   }
 

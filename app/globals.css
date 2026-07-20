@@ -66,6 +66,24 @@
 
 @tailwind utilities;
 
+/* Testimonial image flip-in + quote change — used by components/Testimonials.js */
+@keyframes flipIn {
+  0%   { opacity: 0; transform: perspective(900px) rotateY(-55deg) scale(0.92); }
+  60%  { opacity: 1; transform: perspective(900px) rotateY(7deg) scale(1.02); }
+  100% { opacity: 1; transform: perspective(900px) rotateY(0deg) scale(1); }
+}
+.flip-in { animation: flipIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; will-change: transform; }
+
+@keyframes quoteIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.quote-in { animation: quoteIn 0.5s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-in, .quote-in { animation: none; }
+}
+
 .route-line {
   position: relative;
 }
@@ -92,6 +110,17 @@
   animation-play-state: paused;
 }
 
+/* Second gallery row — same keyframes, run in reverse so it drifts right.
+   Slightly slower so the two rows don't feel mechanically locked together. */
+.marquee-rev {
+  display: flex;
+  width: max-content;
+  animation: marquee 34s linear infinite reverse;
+}
+.marquee-rev:hover {
+  animation-play-state: paused;
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
@@ -102,7 +131,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
+  .marquee-track,
+  .marquee-rev {
     animation: none;
   }
 }

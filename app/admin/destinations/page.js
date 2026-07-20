@@ -41,7 +41,7 @@ export default async function AdminDestinationsPage() {
 
   <Link
     href={`/admin/destinations/${d.id}/edit`}
-    className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink self-start sm:self-auto shrink-0"
+    className="text-xs font-semibold px-3 py-1.5 rounded-full bg-ink text-white dark:bg-white dark:text-ink self-end sm:self-auto shrink-0"
   >
     Edit
   </Link>

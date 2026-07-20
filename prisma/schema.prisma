@@ -50,6 +50,7 @@ model Package {
   status          PackageStatus  @default(DRAFT)
   images          PackageImage[]
   enquiries       Enquiry[]
+  reviews         Review[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
@@ -84,4 +85,28 @@ model Enquiry {
   createdAt  DateTime  @default(now())
 
   @@index([status, createdAt])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Review {
+  id          String       @id @default(cuid())
+  package     Package      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  packageId   String
+  authorName  String
+  authorEmail String
+  rating      Int          // overall 1..5
+  title       String       @default("")
+  body        String
+  verified    Boolean      @default(false)   // admin-set "verified traveller"
+  status      ReviewStatus @default(PENDING)
+  travelDate  DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@unique([packageId, authorEmail])
+  @@index([packageId, status])
 }
