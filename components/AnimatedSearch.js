@@ -64,14 +64,14 @@ export default function AnimatedSearch({ className = "", onNavigate }) {
     const q = value.trim();
     if (!q) return;
     router.push(`/destinations?q=${encodeURIComponent(q)}`);
-    onNavigate?.();   
+    onNavigate?.();
     // Reset the field and release focus so the placeholder animation resumes.
     setValue("");
     setFocused(false);
     inputRef.current?.blur();
   }
 
-  const ghost = reduceMotion ? "Thailand, Bali, Goa…" : typed;
+  const ghost = reduceMotion ? "Thailand, Bali, Goa" : typed;
   const showPlaceholder = !focused && value === "";
 
   return (
@@ -99,7 +99,7 @@ export default function AnimatedSearch({ className = "", onNavigate }) {
           onChange={(e) => setValue(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder={focused ? "Type a destination…" : ""}
+          placeholder={focused ? "Type a destination" : ""}
           aria-label="Search destinations"
           className="w-full bg-transparent text-sm text-ink dark:text-white focus:outline-none placeholder:text-graytext/50"
         />
